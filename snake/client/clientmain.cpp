@@ -6,6 +6,9 @@ LRESULT CALLBACK TrataEventos(HWND, UINT, WPARAM, LPARAM);
 
 
 TCHAR *szProgName = TEXT("Snake");
+INT_PTR CALLBACK DlgProc(HWND, UINT, WPARAM, LPARAM);
+void OnCommand(const HWND, int, int, const HWND);
+INT_PTR OnInitDlg(const HWND, LPARAM);
 
 
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nCmdShow) {
@@ -42,7 +45,9 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 		(HMENU)NULL,			
 		(HINSTANCE)hInst,		
 		0);				
-
+	//HWND hWndEdit = CreateWindow(TEXT("Edit"), TEXT(""), WS_CHILD | WS_VISIBLE | WS_BORDER, 50, 20, 200, 22, hWnd, NULL, NULL, NULL);
+	//HWND hwndButton = CreateWindow(L"BUTTON", L"OK", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 400, 400, 60, 34, hWnd, NULL, NULL, NULL);
+	
 	ShowWindow(hWnd, nCmdShow);	
 	UpdateWindow(hWnd);		
 
@@ -60,6 +65,12 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 
 	switch (messg) {
+
+	case WM_CREATE:
+		DialogBox(GetModuleHandle(0), MAKEINTRESOURCE(IDD_SNAKE_DIALOG), hWnd, DlgProc);
+		
+		break;
+
 	case WM_CLOSE:		
 		if (MessageBox(hWnd, TEXT("Do you want to leave? "), TEXT("Quit"), MB_YESNO | MB_ICONEXCLAMATION) == IDYES)
 			//fechar o jogo
@@ -85,4 +96,50 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 		return(DefWindowProc(hWnd, messg, wParam, lParam));
 	}
 	return(0);
+}
+
+INT_PTR CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch (uMsg)
+	{
+	case WM_COMMAND:
+	{
+		OnCommand(hwnd, LOWORD(wParam), HIWORD(wParam),
+			reinterpret_cast<HWND>(lParam));
+		return 0;
+	}
+	case WM_INITDIALOG:
+	{
+		return OnInitDlg(hwnd, lParam);
+	}
+	default:
+		return FALSE; 
+	}
+}
+
+void OnCommand(const HWND hwnd, int id, int notifycode, const HWND hCntrl)
+{
+	switch (id)
+	{
+	case IDOK:        //processar os dados para o jogo
+	{
+		EndDialog(hwnd, id);
+		break;
+	}
+	case IDCANCEL:    //sair
+	{
+		EndDialog(hwnd, id);
+		PostQuitMessage(0);
+		break;
+	}
+		
+	}
+}
+//=============================================================================
+INT_PTR OnInitDlg(const HWND hwnd, LPARAM lParam)
+{
+
+	//SetWindowText(GetDlgItem(hwnd, IDC_EDIT), _T("Edit Control"));
+
+	return TRUE;
 }
