@@ -1,10 +1,11 @@
 #include <windows.h>
 #include <tchar.h>
+#include "resource.h"
 
 LRESULT CALLBACK TrataEventos(HWND, UINT, WPARAM, LPARAM);
 
 
-TCHAR *szProgName = TEXT("cliente");
+TCHAR *szProgName = TEXT("Snake");
 
 
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nCmdShow) {
@@ -15,30 +16,20 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 
 	wcApp.cbSize = sizeof(WNDCLASSEX);	
 	wcApp.hInstance = hInst;			
-										
 	wcApp.lpszClassName = szProgName;	
 	wcApp.lpfnWndProc = TrataEventos;
 	wcApp.style = CS_HREDRAW | CS_VREDRAW;
-	wcApp.hIcon = LoadIcon(NULL, IDI_ICON1);
-												  
-												  
-	wcApp.hIconSm = LoadIcon(NULL, IDI_INFORMATION);
-													
-													
-	wcApp.hCursor = LoadCursor(NULL, IDC_ARROW);	
-													
-													
-	wcApp.lpszMenuName = NULL;			
-										
+	wcApp.hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDI_SNAKE_ICON));
+	wcApp.hIconSm = LoadIcon(hInst, MAKEINTRESOURCE(IDI_SNAKE_ICON_Sm));
+	wcApp.hCursor = LoadCursor(hInst, MAKEINTRESOURCE(IDC_SNAKE_POINTER));
+	wcApp.lpszMenuName = MAKEINTRESOURCE(IDR_SNAKE_MENU);
 	wcApp.cbClsExtra = 0;				
 	wcApp.cbWndExtra = 0;				
 	wcApp.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
 	
-
 	if (!RegisterClassEx(&wcApp))
 		return(0);
 	
-
 	hWnd = CreateWindow(
 		szProgName,			
 		TEXT("Snake game client"),
@@ -53,9 +44,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 		0);				
 
 	ShowWindow(hWnd, nCmdShow);	
-
 	UpdateWindow(hWnd);		
-
 
 	while ((ret = GetMessage(&lpMsg, NULL, 0, 0)) != 0) {
 		if (ret != -1) {
@@ -69,16 +58,27 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 
 
 LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
-	TCHAR str[100]; int x, y; HDC device; static int xi = 0, yi = 0;
-	static BOOL comecou = FALSE;
-	TCHAR letra = 'a';
-	PAINTSTRUCT pt;
 
 	switch (messg) {
 	case WM_CLOSE:		
-		if (MessageBox(hWnd, TEXT("Quer sair? "), TEXT("Fim da Aplicacao"), MB_YESNO | MB_ICONEXCLAMATION) == IDYES)
+		if (MessageBox(hWnd, TEXT("Do you want to leave? "), TEXT("Quit"), MB_YESNO | MB_ICONEXCLAMATION) == IDYES)
+			//fechar o jogo
 			PostQuitMessage(0);
 		break;
+
+	case WM_COMMAND:
+		switch (LOWORD(wParam)){
+			case ID_FILE_EXIT:
+				if (MessageBox(hWnd, TEXT("Do you want to leave? "), TEXT("Quit"), MB_YESNO | MB_ICONEXCLAMATION) == IDYES)
+					//fechar o jogo
+					PostQuitMessage(0);
+				break;
+			case ID_ABOUT:
+				MessageBox(hWnd, TEXT("Sistemas Operativos 2 \nFábio Coito \n21240055"), TEXT("About"), MB_ICONINFORMATION);
+				break;
+		} 
+		break;
+		
 
 	
 	default:
