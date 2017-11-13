@@ -45,9 +45,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 		(HMENU)NULL,			
 		(HINSTANCE)hInst,		
 		0);				
-	//HWND hWndEdit = CreateWindow(TEXT("Edit"), TEXT(""), WS_CHILD | WS_VISIBLE | WS_BORDER, 50, 20, 200, 22, hWnd, NULL, NULL, NULL);
-	//HWND hwndButton = CreateWindow(L"BUTTON", L"OK", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 400, 400, 60, 34, hWnd, NULL, NULL, NULL);
-	
+
 	ShowWindow(hWnd, nCmdShow);	
 	UpdateWindow(hWnd);		
 
@@ -68,7 +66,6 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 
 	case WM_CREATE:
 		DialogBox(GetModuleHandle(0), MAKEINTRESOURCE(IDD_SNAKE_DIALOG), hWnd, DlgProc);
-		
 		break;
 
 	case WM_CLOSE:		
