@@ -1,6 +1,7 @@
-#include <windows.h>
-#include <tchar.h>
+#include "clientheader.h"
 #include "resource.h"
+
+
 
 LRESULT CALLBACK TrataEventos(HWND, UINT, WPARAM, LPARAM);
 
@@ -9,6 +10,7 @@ TCHAR *szProgName = TEXT("Snake");
 INT_PTR CALLBACK DlgProc(HWND, UINT, WPARAM, LPARAM);
 void OnCommand(const HWND, int, int, const HWND);
 INT_PTR OnInitDlg(const HWND, LPARAM);
+BOOL start = TRUE;
 
 
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nCmdShow) {
@@ -16,6 +18,46 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 	MSG lpMsg;		
 	WNDCLASSEX wcApp;
 	BOOL ret;
+
+	#ifdef UNICODE
+		_setmode(_fileno(stdin), _O_WTEXT);
+		_setmode(_fileno(stdout), _O_WTEXT);
+	#endif
+	
+	hMemoryCli = OpenFileMapping(PAGE_READWRITE, FALSE, nMemory);
+	if (hMemoryCli == NULL){
+		_tprintf(TEXT("[Erro]Criacao de objectos do Windows(%d)\n"), GetLastError());
+		start = FALSE;
+		//return -1;
+	}
+	if(start){
+		pBufMapCli = (LPTSTR)MapViewOfFile(hMemoryCli, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+		if (pBufMapCli == NULL) {
+			_tprintf(TEXT("[Erro]Mapeamento da memoria partilhada(%d)\n"), GetLastError());
+			return -1;
+		}
+	
+		pBufGameCli = pBufMapCli + sizeof(map);
+
+		pBufGameCli = (LPTSTR)MapViewOfFile(hMemoryCli, FILE_MAP_ALL_ACCESS, 0, sizeof(map), 0);
+		if (pBufMapCli == NULL) {
+			_tprintf(TEXT("[Erro]Mapeamento da memoria partilhada(%d)\n"), GetLastError());
+			return -1;
+		}
+
+		pBufKeysCli = pBufGameCli + sizeof(game);
+
+		pBufKeysCli = (LPTSTR)MapViewOfFile(hMemoryCli, FILE_MAP_ALL_ACCESS, 0, (sizeof(map) + sizeof(game)), 0);
+		if (pBufKeysCli == NULL) {
+			_tprintf(TEXT("[Erro]Mapeamento da memoria partilhada(%d)\n"), GetLastError());
+			return -1;
+		}
+	}
+	////////////////////
+
+
+
+
 
 	wcApp.cbSize = sizeof(WNDCLASSEX);	
 	wcApp.hInstance = hInst;			
@@ -62,9 +104,16 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 
 LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 
+	
 	switch (messg) {
 
 	case WM_CREATE:
+		if (start == FALSE) {
+			DialogBox(GetModuleHandle(0), MAKEINTRESOURCE(IDD_SERVER_NOT_FOUND), hWnd, DlgProc);
+			PostQuitMessage(0);
+			break;
+
+		}
 		DialogBox(GetModuleHandle(0), MAKEINTRESOURCE(IDD_SNAKE_DIALOG), hWnd, DlgProc);
 		break;
 

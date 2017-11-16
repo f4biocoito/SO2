@@ -1,47 +1,95 @@
 #include "serverheader.h"
 
 int _tmain(int argc, LPTSTR argv[]) {
-	HANDLE hTcomunica;
-	HANDLE hTmemoria;
 
-	map * PtrMemoria; // mudar para game
-	snake * PtrSMemoria;
+	#ifdef UNICODE
+		_setmode(_fileno(stdin), _O_WTEXT);
+		_setmode(_fileno(stdout), _O_WTEXT);
+	#endif
 
-	PodeEscreverMemoria = CreateSemaphore(NULL, MAXJ, MAXJ, NomeSPodeEscreverMemoria);
-	PodeLerMemoria = CreateSemaphore(NULL, 0, MAXJ, NomeSPodeLerMemoria);
 
-	EventoP = CreateEvent(NULL, TRUE, FALSE, EventoPergunta);
-	EventoR = CreateEvent(NULL, TRUE, FALSE, EventoResposta);
+	hWriteMemory = CreateSemaphore(NULL, MAX_SNAKES, MAX_SNAKES, nWriteMemory);
+	hReadMemory = CreateSemaphore(NULL, 0, MAX_SNAKES, nReadMemory);
 
-	MutexMemoria = CreateMutex(NULL, FALSE, MutexMem);
+	//EventoP = CreateEvent(NULL, TRUE, FALSE, EventoPergunta);
+	//EventoR = CreateEvent(NULL, TRUE, FALSE, EventoResposta);
+	//MutexMemoria = CreateMutex(NULL, FALSE, MutexMem);
 
-#ifdef UNICODE
-	_setmode(_fileno(stdin), _O_WTEXT);
-	_setmode(_fileno(stdout), _O_WTEXT);
-#endif
+	map VarMap;
+	game VarGame;
+	keys VarKeys;
+	int aux1 = 0;
+	int aux2 = 0;
+	int aux3 = 0;
 
+	///////////////////////////////////////////////////////////////////////////
+	gotoxy(0, 2);
 	_tprintf(TEXT("Bemvindo ao servidor"));
 	Sleep(2000);
-	//clrscr();
+	clrscr();
 
-
-
-	gotoxy(0, 2);
-
-	hTcomunica = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)RecebeJogadores, NULL, 0, NULL);
-
-	hMemoria = CreateFileMapping((HANDLE)0xFFFFFFFF, NULL, PAGE_READWRITE, 0, sizeof(map), NomeMemoria);
-	if (hMemoria == NULL) {
+	hMemory = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, (sizeof(map) + sizeof(game) + sizeof(keys)), nMemory);
+	if (hMemory == NULL) {
 		_tprintf(TEXT("[Erro]Criacao de objectos do Windows(%d)\n"), GetLastError());
 		return -1;
 	}
 
-	PtrMemoria = (map *)MapViewOfFile(hMemoria, FILE_MAP_WRITE, 0, 0, sizeof(map));
-	if (PtrMemoria == NULL) {
+	pBufMap = (LPTSTR)MapViewOfFile(hMemory, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+	if (pBufMap == NULL) {
 		_tprintf(TEXT("[Erro]Mapeamento da memoria partilhada(%d)\n"), GetLastError());
 		return -1;
 	}
-	hTmemoria = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)AtualizaMemoria, (LPVOID)PtrMemoria, 0, NULL);
+
+	pBufGame = pBufMap + sizeof(map);
+
+	pBufGame = (LPTSTR)MapViewOfFile(hMemory, FILE_MAP_ALL_ACCESS, 0, sizeof(map), 0);
+	if (pBufMap == NULL) {
+		_tprintf(TEXT("[Erro]Mapeamento da memoria partilhada(%d)\n"), GetLastError());
+		return -1;
+	}
+
+	pBufKeys = pBufGame + sizeof(game);
+
+	pBufKeys = (LPTSTR)MapViewOfFile(hMemory, FILE_MAP_ALL_ACCESS, 0, (sizeof(map) + sizeof(game)), 0);
+	if (pBufKeys == NULL) {
+		_tprintf(TEXT("[Erro]Mapeamento da memoria partilhada(%d)\n"), GetLastError());
+		return -1;
+	}
+
+	//inicializar mapa por omissao
+
+	/*
+	VarMap.sizex = 30;
+	VarMap.sizey = 30;
+	VarMap.objects = 4;
+	VarMap.obstacles = 4;
+	VarMap.mapobject[MAX_MAP_OBJECTS][2]; // (x,y) coords
+	VarMap.mapobstacles[MAX_MAP_OBSTACLES][2]; // (x,y) coords
+	*/
+	CopyMemory((PVOID)pBufMap, &VarMap, sizeof(map));
+	
+	//inicializar jogo por omissao
+
+	/*
+	VarGame.snake[aux1].username[MAX_TAM];
+	VarGame.snake[aux1].snakeSize = SNAKE_SIZE;		// snake size
+	VarGame.snake[aux1].coords[MAX_SNAKE_SIZE][2];	// (x,y) coords
+	VarGame.snake[aux1].invertKeys;					// invert input keys
+	VarGame.snake[aux1].oil;						// raise speed
+	VarGame.snake[aux1].glue;						// decrease speed
+	VarGame.snake[aux1].died;						// 1 - died
+	VarGame.snake[aux1].points;						// Current pontuation
+	VarGame.snake[aux1].currentDirection;
+
+	VarGame.numPlayers;
+	VarGame.numBots;
+	*/
+	CopyMemory((PVOID)pBufGame, &VarGame, sizeof(game));
+
+	
+
+	//hTmemoria = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)AtualizaMemoria, (LPVOID)PtrMemoria, 0, NULL);
+	//hTcomunica = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)RecebeJogadores, NULL, 0, NULL);
 
 	/*
 	comandos = apresentacomandos();
@@ -53,25 +101,25 @@ int _tmain(int argc, LPTSTR argv[]) {
 	//FIM = TRUE;
 
 
-	WaitForSingleObject(hTcomunica, INFINITE);
-	CloseHandle(hTcomunica);
-	WaitForSingleObject(hTmemoria, INFINITE);
-	CloseHandle(hTmemoria);
-
+	//WaitForSingleObject(hTcomunica, INFINITE);
+	//CloseHandle(hTcomunica);
+	//WaitForSingleObject(hTmemoria, INFINITE);
+	//CloseHandle(hTmemoria);
+	///////////////////////////////////////////////////////////////////////////
 	clrscr();
 	gotoxy(0, 1);
 	_tprintf(TEXT("O servidor vai fechar"));
-	UnmapViewOfFile(PtrMemoria);
-	CloseHandle(PodeEscreverMemoria);
-	CloseHandle(PodeLerMemoria);
-	CloseHandle(hMemoria);
-	CloseHandle(EventoR);
-	CloseHandle(EventoP);
-	CloseHandle(MutexMemoria);
+	//UnmapViewOfFile(PtrMemory);
+	CloseHandle(hWriteMemory);
+	CloseHandle(hReadMemory);
+	//CloseHandle(hMemoria);
+	//CloseHandle(EventoR);
+	//CloseHandle(EventoP);
+	//CloseHandle(MutexMemoria);
 	Sleep(2000);
 	exit(0);
 }
-
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 int apresentacomandos(void) {
@@ -92,20 +140,20 @@ int apresentacomandos(void) {
 
 DWORD WINAPI RecebeJogadores(LPVOID param) {
 	HANDLE hPipeCliServ, hPipeServCli;
-	for (int i = 0; i < MAXJ; i++)
-		hPipes[i] = INVALID_HANDLE_VALUE;
-	HANDLE hTT;
+	for (int i = 0; i < MAX_SNAKES; i++)
+		//hPipes[i] = INVALID_HANDLE_VALUE;
+	//HANDLE hTT;
 	//gotoxy(0, 14);
-	while (desliga) {
-		if (Jogadoresemjogo < MAXJ) {
+	while (1) {
+		if (10 < MAX_SNAKES) {
 			//_tprintf(TEXT("[SERVIDOR] Vou passar a criacao de copias do pipe ... (CreateNamedPipe)\n"));
-			hPipeServCli = CreateNamedPipe(PIPE_Serv_Cli, PIPE_ACCESS_OUTBOUND, PIPE_WAIT | PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE, MAXJ, TAM * sizeof(TCHAR), TAM * sizeof(TCHAR), 1000, NULL);
+			hPipeServCli = CreateNamedPipe(PIPE_Serv_Cli, PIPE_ACCESS_OUTBOUND, PIPE_WAIT | PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE, MAX_SNAKES, TAM * sizeof(TCHAR), TAM * sizeof(TCHAR), 1000, NULL);
 			if (hPipeServCli == INVALID_HANDLE_VALUE) {
 				_tprintf(TEXT("Erro na ligacao ao cliente!"));
 				continue;
 			}
 
-			hPipeCliServ = CreateNamedPipe(PIPE_Cli_Serv, PIPE_ACCESS_INBOUND, PIPE_WAIT | PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE, MAXJ, TAM * sizeof(TCHAR), TAM * sizeof(TCHAR), 1000, NULL);
+			hPipeCliServ = CreateNamedPipe(PIPE_Cli_Serv, PIPE_ACCESS_INBOUND, PIPE_WAIT | PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE, MAX_SNAKES, TAM * sizeof(TCHAR), TAM * sizeof(TCHAR), 1000, NULL);
 			if (hPipeCliServ == INVALID_HANDLE_VALUE) {
 				_tprintf(TEXT("Erro na ligacao ao cliente!"));
 				continue;
@@ -117,17 +165,17 @@ DWORD WINAPI RecebeJogadores(LPVOID param) {
 				exit(-1);
 			}
 
-			hPipes[0] = hPipeServCli;
-			Jogadoresemjogo++;
+			//hPipes[0] = hPipeServCli;
+			//Jogadoresemjogo++;
 
-			hTT = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)AtendeJogadores, (LPVOID)hPipeCliServ, 0, NULL);
-			WaitForSingleObject(hTT, INFINITE);
+			//hTT = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)AtendeJogadores, (LPVOID)hPipeCliServ, 0, NULL);
+			//WaitForSingleObject(hTT, INFINITE);
 			break;
 
 			//if (FIM)
 			//break;
 			//Ir a procura de uma posicao livre
-			//for (int i = 0; i < MAXJ; i++) {
+			//for (int i = 0; i < MAX_SNAKES; i++) {
 			//if (hPipes[i] == INVALID_HANDLE_VALUE) {
 			//hPipes[0] = hPipeServCli;
 			//Jogadoresemjogo++;
@@ -140,10 +188,10 @@ DWORD WINAPI RecebeJogadores(LPVOID param) {
 		//}
 	}
 
-	//for (int i = 0; i < MAXJ; i++) {
-	DisconnectNamedPipe(hPipes[0]);
+	//for (int i = 0; i < MAX_SNAKES; i++) {
+	//DisconnectNamedPipe(hPipes[0]);
 	_tprintf(TEXT("\n[SERVIDOR] Vou desligar o pipe... (CloseHandle)\n"));
-	CloseHandle(hPipes[0]);
+	//CloseHandle(hPipes[0]);
 	//}
 	return 0;
 }
@@ -251,13 +299,13 @@ comandos Respostadocliente(HANDLE pipe) {
 
 DWORD WINAPI AtualizaMemoria(LPVOID param) {
 	map * ptr = (map *)param;
-	WaitForSingleObject(MutexMemoria, INFINITE);
+	//WaitForSingleObject(MutexMemoria, INFINITE);
 	//usar os semaforos
-	while (desliga) {
-		WaitForSingleObject(PodeEscreverMemoria, INFINITE);
+	while (1) {
+		//WaitForSingleObject(PodeEscreverMemoria, INFINITE);
 		//memcpy(ptr, &jogo, sizeof(map));
-		ReleaseSemaphore(PodeLerMemoria, 1, NULL);
-		if (desliga) {
+		//ReleaseSemaphore(PodeLerMemoria, 1, NULL);
+		if (1) {
 			break;
 		}
 		//movimento da cobra

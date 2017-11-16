@@ -1,13 +1,13 @@
 
-#define DLL_EXPORT __declspec(dllexport)
-#define DLL_IMPORT __declspec(dllimport)
-
 #include <Windows.h>
 #include <tchar.h>
 #include <io.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <time.h>
+
+#define DLL_EXPORT __declspec(dllexport)
+#define DLL_IMPORT __declspec(dllimport)
 
 #define MIN_FIELD_X 20
 #define MAX_FIELD_X 80
@@ -29,7 +29,6 @@
 #define KEY_DOWN 2
 #define KEY_RIGHT 3
 #define KEY_LEFT 4
-
 
 
 struct DLL_EXPORT map {
@@ -54,7 +53,6 @@ struct DLL_EXPORT snake {
 };////
 
 struct DLL_EXPORT game {
-	map map;
 	snake snake[MAX_SNAKES];
 	int numPlayers;
 	int numBots;
@@ -64,8 +62,7 @@ struct DLL_EXPORT game {
 struct DLL_EXPORT chat {
 	HANDLE owner;
 	HANDLE players[MAX_SNAKES - 1];
-	TCHAR cmd[TAM];
-};
+};////
 
 
 struct DLL_EXPORT keys {
@@ -75,3 +72,22 @@ struct DLL_EXPORT keys {
 	TCHAR bottom;
 	TCHAR top;
 };////
+
+struct config {
+	TCHAR user1[MAX_TAM];
+	TCHAR user2[MAX_TAM];
+	BOOL changeKeys;
+	keys kUser1;
+	keys kUser2;
+	int snakeSize;
+	int numPlayers;
+	int	mapWith;
+	int	mapHeigt;
+	int numObjects;
+	int	numObstacles;
+};
+
+struct change {
+	TCHAR user[MAX_TAM];
+	TCHAR userKey;
+};

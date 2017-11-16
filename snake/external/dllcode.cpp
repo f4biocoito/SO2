@@ -1,14 +1,14 @@
 #include "dllexport.h"
 
-LPCTSTR DLL_EXPORT NomeMemoria = { TEXT("Nome Memoria Partilhada") };
+LPCTSTR DLL_EXPORT nMemory = { TEXT("Nome da Memoria Partilhada") };
 
-LPCTSTR DLL_EXPORT NomeSPodeEscreverMemoria = { TEXT("Semaforo Pode Escrever Memoria") };
-LPCTSTR DLL_EXPORT NomeSPodeLerMemoria = { TEXT("Semaforo Pode Ler Memoria") };
+LPCTSTR DLL_EXPORT nWriteMemory = { TEXT("Pode Escrever Memoria") };
+LPCTSTR DLL_EXPORT nReadMemory = { TEXT("Pode Ler Memoria") };
 
-LPCTSTR DLL_EXPORT EventoPergunta = { TEXT("EventoPergunta") };
-LPCTSTR DLL_EXPORT EventoResposta = { TEXT("EventoResposta") };
+//LPCTSTR DLL_EXPORT EventoPergunta = { TEXT("EventoPergunta") };
+//LPCTSTR DLL_EXPORT EventoResposta = { TEXT("EventoResposta") };
 
-LPCTSTR DLL_EXPORT MutexMem = { TEXT("Mutex Mem") };
+//LPCTSTR DLL_EXPORT MutexMem = { TEXT("Mutex Mem") };
 
 
 
