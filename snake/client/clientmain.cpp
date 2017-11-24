@@ -12,6 +12,7 @@ void OnCommand(const HWND, int, int, const HWND);
 INT_PTR OnInitDlg(const HWND, LPARAM);
 BOOL start = TRUE;
 
+LPTSTR aux;
 
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nCmdShow) {
 	HWND hWnd;		
@@ -104,14 +105,14 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nC
 
 LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam) {
 
-	
+	HDC hdctest;
 	switch (messg) {
 
 	case WM_CREATE:
 		if (start == FALSE) {
-			DialogBox(GetModuleHandle(0), MAKEINTRESOURCE(IDD_SERVER_NOT_FOUND), hWnd, DlgProc);
-			PostQuitMessage(0);
-			break;
+			//DialogBox(GetModuleHandle(0), MAKEINTRESOURCE(IDD_SERVER_NOT_FOUND), hWnd, DlgProc);
+			//PostQuitMessage(0);
+			//break;
 
 		}
 		DialogBox(GetModuleHandle(0), MAKEINTRESOURCE(IDD_SNAKE_DIALOG), hWnd, DlgProc);
@@ -132,6 +133,12 @@ LRESULT CALLBACK TrataEventos(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPara
 				break;
 			case ID_ABOUT:
 				MessageBox(hWnd, TEXT("Sistemas Operativos 2 \nFábio Coito \n21240055"), TEXT("About"), MB_ICONINFORMATION);
+				//hdc=GetDC(hWnd);					
+				// Desenha um rectangulo 
+				// Rectangle (canto sup.esq, Canto.inf.dir)
+				//Rectangle(hdctest, 200, 200, 400, 400);
+				//ReleaseDC(hWnd, hdctest);
+				//_tprintf(TEXT("coisas(%s)\n"), aux)
 				break;
 		} 
 		break;
@@ -169,6 +176,12 @@ void OnCommand(const HWND hwnd, int id, int notifycode, const HWND hCntrl)
 	{
 	case IDOK:        //processar os dados para o jogo
 	{
+		HWND temp = GetDlgItem(hwnd, IDC_EDIT_USER1);
+		int editlength = GetWindowTextLength(temp);
+		GetWindowText(temp, aux, editlength);
+
+		//TextOut(hwnd, 0, 50, TEXT("Teclas: Escreva uma frase..."), _tcslen("Teclas: Escreva uma frase..."));
+
 		EndDialog(hwnd, id);
 		break;
 	}
@@ -186,6 +199,7 @@ INT_PTR OnInitDlg(const HWND hwnd, LPARAM lParam)
 {
 
 	//SetWindowText(GetDlgItem(hwnd, IDC_EDIT), _T("Edit Control"));
+	
 
 	return TRUE;
 }
